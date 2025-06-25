@@ -28,7 +28,7 @@ class png_util {
     public:
 
         bool loadfile(std::string& filename);
-        bool savefile(std::string& filename);
+        bool savefile(const std::string& filename);
 
         bool decode();
         bool encode();
