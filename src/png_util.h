@@ -13,8 +13,10 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include "globals/png_global.h"
 
-using byte = uint8_t;
+
+
 
 class png_util {
     private:
@@ -30,6 +32,9 @@ class png_util {
         bool loadfile(std::string& filename);
         bool savefile(const std::string& filename);
 
+        //check if it is png
+        bool checkfile();
+
         bool decode();
         bool encode();
        
@@ -37,8 +42,5 @@ class png_util {
         std::string extractMessage();
         void clearMessage();
 };
-
-extern png_util globalPngUtil;
-
 
 #endif //PNG_H

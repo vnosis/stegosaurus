@@ -19,19 +19,36 @@ bool png_util::loadfile(std::string &filename)
 
     this->fileBuffer = std::vector<byte>((std::istreambuf_iterator<char>(pngFile)),{});
     
-    return false;
+    return true;
 }
 
 bool png_util::savefile(const std::string &filename)
 {
-    std::ofstream pngFile(filename, std::ios::binary);
-    if(!filename) 
+    std::ofstream binaryFile(filename, std::ios::binary);
+    if(!binaryFile) 
     {
         return false;
     }
 
-    pngFile.write(reinterpret_cast<const char*>(this->fileBuffer.data()), fileBuffer.size());
-    return false;
+    binaryFile.write(reinterpret_cast<const char*>(this->fileBuffer.data()), fileBuffer.size());
+    return true;
+}
+
+bool png_util::checkfile() 
+{
+    size_t i = 0;
+
+    if(this->fileBuffer.size() < pnglib::PNG_SIGNATURE.size()) return false;
+
+    for(auto& hexSignature : pnglib::PNG_SIGNATURE) 
+    {
+        if(hexSignature != this->fileBuffer[i++])
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool png_util::decode()
