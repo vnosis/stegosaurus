@@ -1,6 +1,8 @@
 #include "png_util.h"
 #include <fstream> 
 #include <iostream>
+#include <unistd.h>
+#include <limits.h>
 
 
 
@@ -10,15 +12,24 @@ size_t png_util::getIndex(int x, int y) const
     return size_t();
 }
 
-bool png_util::loadfile(std::string &filename)
+bool png_util::loadfile(const std::string &filename)
 {
-    std::ifstream pngFile(filename, std::ios::binary);
+
+    // CWD test
+    // std::cout << filename << std::endl;
+    // char cwd[PATH_MAX];
+    // if(getcwd(cwd, sizeof(cwd)) != NULL) {
+    //     std::cout << cwd << std::endl;
+    // }
+
+    std::ifstream pngFile(filename, std::ios_base::binary);
     if(!pngFile) {
+        std::cerr << "filed to open";
         return false;
     }
 
     this->fileBuffer = std::vector<byte>((std::istreambuf_iterator<char>(pngFile)),{});
-    
+    std::cout << fileBuffer.size() << " size " << std::endl;
     return true;
 }
 
@@ -37,11 +48,11 @@ bool png_util::savefile(const std::string &filename)
 bool png_util::checkfile() 
 {
     size_t i = 0;
-
     if(this->fileBuffer.size() < pnglib::PNG_SIGNATURE.size()) return false;
 
     for(auto& hexSignature : pnglib::PNG_SIGNATURE) 
     {
+
         if(hexSignature != this->fileBuffer[i++])
         {
             return false;

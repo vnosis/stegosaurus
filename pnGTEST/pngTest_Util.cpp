@@ -1,19 +1,19 @@
 #include <gtest/gtest.h>
 #include "../src/png_util.h"
 
+png_util png;
+
 TEST(PNGUTILTEST, LoadFileWorks) {
-    png_util png;
-    std::string testpng = "../static/ldr.png"; 
+    std::string testpng = "static/ldr.png"; 
     EXPECT_TRUE(png.loadfile(testpng));
 };
 
-// TEST(PNGUTILTEST, CheckPngFile) {
-//     png_util png;
-//     EXPECT_TRUE(png.checkfile());
-// }
+TEST(PNGUTILTEST, SaveFile) {
+    std::string savedfile = "static/savedfile.png";
+    EXPECT_TRUE(png.savefile(savedfile));
+};
 
-// TEST(PNGUTILTEST, SaveFile) {
-//     png_util png;
-//     std::string savedfile = "../static/savedfile";
-//     EXPECT_TRUE(png.savefile(savedfile));
-// };
+TEST(PNGUTILTEST, CheckPngFile) {
+    EXPECT_TRUE(png.checkfile());
+};
+

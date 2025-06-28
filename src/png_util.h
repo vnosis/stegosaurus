@@ -29,7 +29,7 @@ class png_util {
 
     public:
 
-        bool loadfile(std::string& filename);
+        bool loadfile(const std::string& filename);
         bool savefile(const std::string& filename);
 
         //check if it is png
