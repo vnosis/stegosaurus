@@ -45,6 +45,11 @@ bool png_util::savefile(const std::string &filename)
     return true;
 }
 
+std::vector<std::string> getPngDetails() 
+{
+    return std::vector<std::string>();
+};
+
 bool png_util::checkfile() 
 {
     size_t i = 0;
@@ -88,3 +93,4 @@ std::string png_util::extractMessage()
 void png_util::clearMessage()
 {
 }
+

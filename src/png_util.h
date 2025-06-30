@@ -15,13 +15,15 @@
 #include <cstdint>
 #include "globals/png_global.h"
 
+#define chunkSize 13
+
 
 
 
 class png_util {
     private:
         std::vector<byte> fileBuffer{};
-        std::vector<byte> pixels{};
+        
         unsigned width{};
         unsigned height{};
 
@@ -31,6 +33,8 @@ class png_util {
 
         bool loadfile(const std::string& filename);
         bool savefile(const std::string& filename);
+
+        std::vector<std::string> getPngDetails();
 
         //check if it is png
         bool checkfile();
@@ -42,5 +46,15 @@ class png_util {
         std::string extractMessage();
         void clearMessage();
 };
+
+
+template <typename T, int N>
+class Chunk 
+{
+    T elem[N];
+    
+}
+
+
 
 #endif //PNG_H

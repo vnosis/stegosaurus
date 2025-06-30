@@ -17,4 +17,11 @@ namespace pnglib {
         0x1A,
         0x0A
     };
+
+    inline constexpr std::array<byte, 4> IHDR {
+        0x49,
+        0x48,
+        0x44,
+        0x52
+    };
 }
