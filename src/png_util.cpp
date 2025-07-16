@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <limits.h>
+#include <queue>
 
 
 
@@ -28,7 +29,7 @@ bool png_util::loadfile(const std::string &filename)
         return false;
     }
 
-    this->fileBuffer = std::vector<byte>((std::istreambuf_iterator<char>(pngFile)),{});
+    this->fileBuffer = std::vector<ubyte>((std::istreambuf_iterator<char>(pngFile)),{});
     std::cout << fileBuffer.size() << " size " << std::endl;
     return true;
 }
@@ -62,7 +63,11 @@ bool png_util::checkfile()
         {
             return false;
         }
+        reference++;
     }
+
+    pnglib::ChunkMap["PNG"] = true;
+    std::cout << pnglib::ChunkMap["PNG"] << std::endl;
 
     return true;
 }
@@ -93,4 +98,96 @@ std::string png_util::extractMessage()
 void png_util::clearMessage()
 {
 }
+
+void png_util::IHDR(std::shared_ptr<pnglib::Chunk_IHDR> ihdr) 
+{
+
+    std::queue<ubyte> ihdrQ({0x49,0x48,0x44,0x52});
+    std::queue<ubyte> fileQ{};
+
+    int ihdrSize = 4;
+
+    for(int i = 0; i < ihdrSize; i++) 
+    {
+        fileQ.push(this->fileBuffer[reference]);
+    }
+
+    while(reference < this->fileBuffer.size() && fileQ != ihdrQ) 
+    {
+        fileQ.pop();
+        fileQ.push(this->fileBuffer[reference++]);
+    }
+     
+
+    if(reference < this->fileBuffer.size())
+    {
+        std::cout << "IHDR chunk found" << std::endl;
+        pnglib::ChunkMap["IHDR"] = true;
+    }
+
+    // Fill width and height
+    uint8_t index = 0;
+    std::string width{};
+    std::cout << this->fileBuffer[reference] << std::endl;
+    while(reference < this->fileBuffer.size() && index < 4) {
+        ihdr->width <<= 8;
+        ihdr->width |= this->fileBuffer[reference++];
+        index++;
+    }
+    index = 0;
+    while(reference < this->fileBuffer.size() && index < 4) {
+        ihdr->height <<= 8;
+        ihdr->height |= this->fileBuffer[reference++];
+        index++;
+    }
+
+
+    std::cout << (*ihdr).width << " Width" << std::endl;
+    std::cout << (*ihdr).height << " Height" << std::endl;
+
+    // Bit Depth 
+    index = 0;
+    while(reference < this->fileBuffer.size() && index < 1) 
+    {
+        ihdr->depth |= this->fileBuffer[reference++];
+    }
+
+    std::cout << ihdr->depth << " bit depth" << std::endl;
+
+    // Color Type
+    index = 0;
+    while(reference < this->fileBuffer.size() && index < 1);
+    {
+        ihdr->color_type |= this->fileBuffer[reference++];
+    }
+
+    std::cout << ihdr->color_type << " color type" << std::endl;
+
+}
+
+
+
+
+
+
+// template <typename ChunkType>
+// void png_util::Chunk(ChunkType& chunkVar)
+// {
+//     size_t size = sizeof(ChunkType);    
+
+
+//     uint8_t csize = 0;  
+//     for(int i = 0; i < 4; i++) {
+//         csize += fileBuffer[reference++];
+//     }
+//     std::cout << csize << std::endl;
+
+// };
+
+
+// template <typename ChunkType>
+// Chunk<ChunkType>::Chunk()
+// {
+//     this->chunk_size = sizeof(T);
+// };
 
