@@ -125,10 +125,8 @@ void png_util::IHDR(std::shared_ptr<pnglib::Chunk_IHDR> ihdr)
         pnglib::ChunkMap["IHDR"] = true;
     }
 
-    // Fill width and height
+    // Using index to count 8 bits per index
     uint8_t index = 0;
-    std::string width{};
-    std::cout << this->fileBuffer[reference] << std::endl;
     while(reference < this->fileBuffer.size() && index < 4) {
         ihdr->width <<= 8;
         ihdr->width |= this->fileBuffer[reference++];
@@ -141,27 +139,24 @@ void png_util::IHDR(std::shared_ptr<pnglib::Chunk_IHDR> ihdr)
         index++;
     }
 
-
     std::cout << (*ihdr).width << " Width" << std::endl;
     std::cout << (*ihdr).height << " Height" << std::endl;
 
-    // Bit Depth 
     index = 0;
-    while(reference < this->fileBuffer.size() && index < 1) 
-    {
-        ihdr->depth |= this->fileBuffer[reference++];
-    }
+    ihdr->depth |= this->fileBuffer[reference++];
+    std::cout << (int)ihdr->depth << " bit depth" << std::endl;
 
-    std::cout << ihdr->depth << " bit depth" << std::endl;
+    ihdr->color_type |= this->fileBuffer[reference++];
+    std::cout << (int)ihdr->color_type << " color type" << std::endl;
 
-    // Color Type
-    index = 0;
-    while(reference < this->fileBuffer.size() && index < 1);
-    {
-        ihdr->color_type |= this->fileBuffer[reference++];
-    }
+    ihdr->compression |= this->fileBuffer[reference++];
+    std::cout << (int)ihdr->compression << " Compression" << std::endl;
 
-    std::cout << ihdr->color_type << " color type" << std::endl;
+    ihdr->filter |= this->fileBuffer[reference++];
+    std::cout << (int)ihdr->filter << " Filter Method" << std::endl;
+
+    ihdr->interlace |= this->fileBuffer[reference++];
+    std::cout << (int)ihdr->interlace << " Interlace" << std::endl;
 
 }
 

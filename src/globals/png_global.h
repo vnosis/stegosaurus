@@ -35,7 +35,7 @@ namespace pnglib {
         ubyte color_type{}; 
         ubyte compression{};
         ubyte filter{};
-        ubyte intterlace{};
+        ubyte interlace{};
     };
 
     inline std::unordered_map<std::string, bool> ChunkMap{
