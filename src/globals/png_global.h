@@ -9,6 +9,9 @@
 using ubyte4 = uint32_t;  
 using ubyte = uint8_t;
 
+constexpr int ERROR_INVALID_PLTE = -2;
+constexpr int SUCCESS = 1;
+
 namespace pnglib {
     inline constexpr std::array<ubyte, 8> PNG_SIGNATURE {
         0x89,
@@ -38,8 +41,14 @@ namespace pnglib {
         ubyte interlace{};
     };
 
+    struct Chunk_PLTE {
+        ubyte4 size{};
+        std::vector<ubyte> data{}; // size
+    };
+
     inline std::unordered_map<std::string, bool> ChunkMap{
         {"PNG", false},
         {"IHDR", false},
+        {"PLTE", false},
     }; 
 }

@@ -9,9 +9,10 @@ int main(){
     png.checkfile();
 
     std::shared_ptr<pnglib::Chunk_IHDR> pngihdr = std::make_shared<pnglib::Chunk_IHDR>();
+    
 
     png.IHDR(pngihdr);
-
+    png.PLTE();
 
     return 0;
 }

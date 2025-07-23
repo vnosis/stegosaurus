@@ -51,7 +51,7 @@ class png_util {
 
         // Chunks
         void IHDR(std::shared_ptr<pnglib::Chunk_IHDR>); // 13 bytes
-        void PLTE(); 
+        int PLTE(); 
         void IDAT();
         void IEND();
 
