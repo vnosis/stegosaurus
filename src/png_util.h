@@ -50,10 +50,11 @@ class png_util {
         void clearMessage();
 
         // Chunks
-        void IHDR(std::shared_ptr<pnglib::Chunk_IHDR>); // 13 bytes
-        int PLTE(); 
-        void IDAT();
-        void IEND();
+        int IHDR(std::shared_ptr<pnglib::IHDR>); 
+        int PLTE(std::shared_ptr<pnglib::PLTE>); 
+        int tRNS(std::shared_ptr<pnglib::tRNS>);
+        int IDAT(std::shared_ptr<pnglib::IDAT>);
+        int IEND();
 
 
         // Template function

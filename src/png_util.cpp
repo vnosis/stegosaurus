@@ -5,9 +5,6 @@
 #include <limits.h>
 #include <queue>
 
-
-
-
 size_t png_util::getIndex(int x, int y) const
 {
     return size_t();
@@ -15,13 +12,6 @@ size_t png_util::getIndex(int x, int y) const
 
 bool png_util::loadfile(const std::string &filename)
 {
-
-    // CWD test
-    // std::cout << filename << std::endl;
-    // char cwd[PATH_MAX];
-    // if(getcwd(cwd, sizeof(cwd)) != NULL) {
-    //     std::cout << cwd << std::endl;
-    // }
 
     std::ifstream pngFile(filename, std::ios_base::binary);
     if(!pngFile) {
@@ -99,9 +89,9 @@ void png_util::clearMessage()
 {
 }
 
-void png_util::IHDR(std::shared_ptr<pnglib::Chunk_IHDR> ihdr) 
+int png_util::IHDR(std::shared_ptr<pnglib::IHDR> ihdr) 
 {
-
+    std::cout << "<---IHDR--->\n";
     std::queue<ubyte> ihdrQ({0x49,0x48,0x44,0x52});
     std::queue<ubyte> fileQ{};
 
@@ -117,7 +107,25 @@ void png_util::IHDR(std::shared_ptr<pnglib::Chunk_IHDR> ihdr)
         fileQ.pop();
         fileQ.push(this->fileBuffer[reference++]);
     }
-     
+
+    if(fileQ != ihdrQ)
+    {
+        return ERROR_INVALID_IHDR;
+    }
+
+    // Find ihdrdata size
+    int ihdrSizeOffsetRef = reference - 8; 
+    ubyte4 ihdrDataSize{};
+
+    if(ihdrSizeOffsetRef > 0) 
+    {
+        ihdrDataSize = this->fileBuffer[ihdrSizeOffsetRef] <<24 | 
+                         this->fileBuffer[ihdrSizeOffsetRef + 1] <<16 |  
+                         this->fileBuffer[ihdrSizeOffsetRef + 2] <<8 | 
+                         this->fileBuffer[ihdrSizeOffsetRef + 3];
+    }
+
+    ihdr->ihdrSize = ihdrDataSize;
 
     if(reference < this->fileBuffer.size())
     {
@@ -156,13 +164,15 @@ void png_util::IHDR(std::shared_ptr<pnglib::Chunk_IHDR> ihdr)
         std::cout << (int)ihdr->interlace << " Interlace" << std::endl;
     }
     
+    return SUCCESS;
 
 }
 
 //PLTE must start after IHDR
 // TODO change reference start
-int png_util::PLTE() 
+int png_util::PLTE(std::shared_ptr<pnglib::PLTE> pngPLTE) 
 {
+    std::cout << "<----PLTE--->\n";
     this->reference = 0;
     std::queue<ubyte> plte({0x50, 0x4c, 0x54, 0x45});
     std::queue<ubyte> plteQueue{};
@@ -194,28 +204,92 @@ int png_util::PLTE()
         return ERROR_INVALID_PLTE;
     } 
 
-    std::cout << plteSize << " PLTE SIZE\n";
+    std::cout << plteSize/3 << " PLTE SIZE\n";
     if(plteSize % 3 != 0)
     {
         return ERROR_INVALID_PLTE;
     }
 
-    std::vector<ubyte> dataBuffer(plteSize, 0);
-    while(plteSize > 0 && reference < this->fileBuffer.size()) {
-        dataBuffer.push_back(this->fileBuffer[reference++]);
-        plteSize--;
+    uint8_t plteSeries = plteSize / 3;
+    uint8_t index = 0;
+    std::vector<ubyte> rgb{};
+    while(index < plteSeries && reference < this->fileBuffer.size()) 
+    {
+        for(int i = 0; i < 3; i++) 
+        {
+            rgb.push_back(this->fileBuffer[reference++]);
+        }
+        pngPLTE->rgbData.push_back(rgb);
+        index++;
     }
-
 
     return SUCCESS;
 }
 
+int png_util::IEND() 
+{
+    std::cout << "<---IEND--->\n";
 
+    std::queue<ubyte> iendQ{};
+    for(int i = 0;i < 4; i++) 
+    {
+        iendQ.push(this->fileBuffer[reference++]);
+    }
 
+    while(reference < this->fileBuffer.size() && iendQ != pnglib::IENDQ) 
+    {
+        iendQ.pop();
+        iendQ.push(this->fileBuffer[reference++]);
+    }
 
+    if(reference > this->fileBuffer.size())
+    {
+        return ERROR_INVALID_IEND;
+    }
 
+    return SUCCESS;
+};
 
+int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
+{
+    
+    std::cout << "<---IDAT--->\n";
 
+    std::queue<ubyte> idatQ{};
+    for(int i = 0; i < 4; i++) 
+    {
+        idatQ.push(this->fileBuffer[reference++]);
+    }
+
+    while(reference < this->fileBuffer.size() && idatQ != pnglib::IDATQ)
+    {
+        idatQ.pop();
+        idatQ.push(this->fileBuffer[reference++]);
+    }
+    if(idatQ != pnglib::IDATQ)
+    {
+        return ERROR_INVALID_IDAT;
+    }
+
+    ubyte refStart = reference - 8u;
+    std::cout << reference <<  " ref" << std::endl;
+    if(refStart > 0) 
+    {
+        std::cout << this->fileBuffer[refStart] << std::endl;
+        idat->size = this->fileBuffer[refStart]<<24 |
+                     this->fileBuffer[refStart + 1]<<16 |
+                     this->fileBuffer[refStart + 2]<<8 |
+                     this->fileBuffer[refStart + 3];
+    }
+    else    
+        return ERROR_INVALID_IDAT;
+
+    std::cout << "IDAT found" << std::endl;
+
+    std::cout << idat->size << " IDAT size" << std::endl;
+
+    return SUCCESS;
+}
 
 // template <typename ChunkType>
 // void png_util::Chunk(ChunkType& chunkVar)
