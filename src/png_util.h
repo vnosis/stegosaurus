@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <memory>
 
+
 #include "globals/png_global.h"
 
 #define chunkSize 13
@@ -22,13 +23,19 @@
 class png_util {
     private:
         std::vector<ubyte> fileBuffer{};
+        size_t scanlineLength{};
+        ubyte byteperpixel{};
 
-        size_t reference = 0;
+        size_t reference{};
         
         unsigned width{};
         unsigned height{};
 
         size_t getIndex(int x, int y) const;
+
+        pnglib::IHDR ihdr = pnglib::IHDR();
+        pnglib::PLTE plte = pnglib::PLTE();
+        pnglib::IDAT idat = pnglib::IDAT();
         
     public:
 
@@ -56,35 +63,10 @@ class png_util {
         int IDAT(std::shared_ptr<pnglib::IDAT>);
         int IEND();
 
+        //Misc
+        int Decompress(std::shared_ptr<pnglib::IDAT>);
+        void scanline(ubyte&, ubyte&, ubyte4&);
 
-        // Template function
-        // Fill out png chunk data 
-        // template <typename ChunkType> 
-        // void Chunk(ChunkType& chunkArg)
-        // {
-        //     size_t size = sizeof(ChunkType);    
-        //     uint8_t csize = 0;  
-        //         for(int i = 0; i < 8; i++) {
-        //             std::cout << &fileBuffer[reference] << "file ref" << std::endl;
-        //             std::cout << reference << " reference " << std::endl;
-        //             reference++;
-        //         }
-
-        // };
 };
-
-
-// template <Chunk_IHDR()typename ChunkType>
-// class Chunk 
-// {
-//     private:
-//         size_t chunk_sizel = 0;
-    
-//     public:
-//         Chunk();
-//         void fillData();
-// };
-
-
 
 #endif //PNG_H

@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <queue>
+#include <zlib.h>
 
 size_t png_util::getIndex(int x, int y) const
 {
@@ -246,6 +247,7 @@ int png_util::IEND()
     {
         return ERROR_INVALID_IEND;
     }
+    std::cout << reference << " END\n";
 
     return SUCCESS;
 };
@@ -254,6 +256,7 @@ int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
 {
     
     std::cout << "<---IDAT--->\n";
+    this->reference = 0;
 
     std::queue<ubyte> idatQ{};
     for(int i = 0; i < 4; i++) 
@@ -266,23 +269,36 @@ int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
         idatQ.pop();
         idatQ.push(this->fileBuffer[reference++]);
     }
+
     if(idatQ != pnglib::IDATQ)
     {
+        std::cout << "IDAT not found\n";
+        std::cout << "REFERENCE " << reference << std::endl;
         return ERROR_INVALID_IDAT;
     }
 
-    ubyte refStart = reference - 8u;
-    std::cout << reference <<  " ref" << std::endl;
+    int refStart = reference - 8;
     if(refStart > 0) 
     {
-        std::cout << this->fileBuffer[refStart] << std::endl;
         idat->size = this->fileBuffer[refStart]<<24 |
                      this->fileBuffer[refStart + 1]<<16 |
                      this->fileBuffer[refStart + 2]<<8 |
                      this->fileBuffer[refStart + 3];
     }
     else    
+    {
+        std::cout << "IDAT not found\n";
+        std::cout << "REFERENCE " << reference << std::endl;
         return ERROR_INVALID_IDAT;
+    }
+
+    for(int i = 0; i < idat->size; i++)
+    {
+        idat->data.push_back(this->fileBuffer[reference++]);
+        //std::cout << (int)this->fileBuffer[reference] << std::endl;
+    }
+    std::cout << this->fileBuffer[reference] << std::endl;
+
 
     std::cout << "IDAT found" << std::endl;
 
@@ -291,24 +307,32 @@ int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
     return SUCCESS;
 }
 
-// template <typename ChunkType>
-// void png_util::Chunk(ChunkType& chunkVar)
-// {
-//     size_t size = sizeof(ChunkType);    
+//FIX ALL DECOMPRESSION ISSUES
+
+int png_util::Decompress(std::shared_ptr<pnglib::IDAT> idat) 
+{
+    //Todo If chunk map has positive idat value then decompress
+    unsigned char* decompressed[idat->size];
+    z_stream strm;
+    strm.zalloc = NULL;
+    strm.zfree = NULL;
+    strm.opaque = NULL;
+    
+
+    uncompress((Bytef*)&decompressed, (uLongf*)idat->size ,(const Bytef*)&idat->data, (uLong)idat->size);
+    for(int i =0; i < idat->size; i++) {
+        std::cout << *decompressed[i] << std::endl;
+    }
 
 
-//     uint8_t csize = 0;  
-//     for(int i = 0; i < 4; i++) {
-//         csize += fileBuffer[reference++];
-//     }
-//     std::cout << csize << std::endl;
+}
+void png_util::scanline(ubyte& colorType, ubyte& bitdepth, ubyte4& width) 
+{
+    std::cout << "<---SCANLINE-->\n";
+    // In Bytes
+    this->scanlineLength = width * pnglib::ScanSample[colorType] * bitdepth / 8;
+    this->byteperpixel = (pnglib::ScanSample[colorType] * bitdepth) / 8;
+    std::cout << (int)this->byteperpixel << std::endl;
+};
 
-// };
-
-
-// template <typename ChunkType>
-// Chunk<ChunkType>::Chunk()
-// {
-//     this->chunk_size = sizeof(T);
-// };
 

@@ -28,6 +28,8 @@ namespace pnglib {
         0x1A,
         0x0A
     };
+    inline std::queue<ubyte> IENDQ({0x49,0x45,0x4e,0x44});
+    inline std::queue<ubyte> IDATQ({0x49,0x44,0x41,0x54});
 
     // inline constexpr std::array<ubyte, 4> IHDR {
     //     0x49,
@@ -45,6 +47,8 @@ namespace pnglib {
         ubyte compression{};
         ubyte filter{};
         ubyte interlace{};
+        int scanlineLenght{};
+        int byteperpixel{};
     };
 
     struct tRNS{
@@ -54,17 +58,14 @@ namespace pnglib {
         ubyte4 size{};
         std::vector<std::vector<ubyte>> rgbData{};
     };
-
    
     struct IDAT {
         ubyte4 size{};       
         std::vector<ubyte> data{}; 
+
     };
      // In case of multiple IDAT's
     // std::vector<IDAT> IDATS{};
-
-    inline std::queue<ubyte> IENDQ({0x49,0x45,0x4e,0x44});
-    inline std::queue<ubyte> IDATQ({0x49,0x44,0x41,0x54});
 
     inline std::unordered_map<std::string, bool> ChunkMap{
         {"PNG", false},
@@ -73,4 +74,15 @@ namespace pnglib {
         {"IDAT", false},
         {"IEND", false},
     }; 
+
+    // Find a better way to represent this
+    inline std::unordered_map<int, int> ScanSample{
+        {0,1},
+        {2,3},
+        {3,1},
+        {4,2},
+        {6,4},
+    };
+
+    
 }

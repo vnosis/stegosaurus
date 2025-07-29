@@ -4,7 +4,7 @@
 
 int main(){
     png_util png;    
-    std::string testpng = "static/ldr.png";
+    std::string testpng = "static/22.png";
     png.loadfile(testpng);
     png.checkfile();
 
@@ -15,6 +15,9 @@ int main(){
     png.IHDR(pngIHDR);
     png.PLTE(pngPLTE);
     std::cout << png.IDAT(pngIDAT) << std::endl;
+    png.scanline(pngIHDR->color_type, pngIHDR->depth, pngIHDR->width);
+    png.Decompress(pngIDAT);
+    png.IEND();
 
     return 0;
 }
