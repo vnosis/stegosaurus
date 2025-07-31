@@ -15,7 +15,7 @@ int main(){
     png.IHDR(pngIHDR);
     png.PLTE(pngPLTE);
     std::cout << png.IDAT(pngIDAT) << std::endl;
-    png.scanline(pngIHDR->color_type, pngIHDR->depth, pngIHDR->width);
+    // png.scanline(pngIHDR->color_type, pngIHDR->depth, pngIHDR->width);
     png.Decompress(pngIDAT);
     png.IEND();
 

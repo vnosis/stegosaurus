@@ -61,7 +61,8 @@ namespace pnglib {
    
     struct IDAT {
         ubyte4 size{};       
-        std::vector<ubyte> data{}; 
+        std::vector<ubyte> compressedD{}; 
+        std::vector<ubyte> decompressedD{};
 
     };
      // In case of multiple IDAT's

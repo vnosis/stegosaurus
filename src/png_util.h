@@ -25,6 +25,8 @@ class png_util {
         std::vector<ubyte> fileBuffer{};
         size_t scanlineLength{};
         ubyte byteperpixel{};
+        ubyte bitPerRow{};
+        ubyte bytesPerRow{};
 
         size_t reference{};
         

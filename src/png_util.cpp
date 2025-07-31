@@ -294,7 +294,7 @@ int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
 
     for(int i = 0; i < idat->size; i++)
     {
-        idat->data.push_back(this->fileBuffer[reference++]);
+        idat->compressedD.push_back(this->fileBuffer[reference++]);
         //std::cout << (int)this->fileBuffer[reference] << std::endl;
     }
     std::cout << this->fileBuffer[reference] << std::endl;
@@ -311,19 +311,42 @@ int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
 
 int png_util::Decompress(std::shared_ptr<pnglib::IDAT> idat) 
 {
+    constexpr size_t CHUNK_SIZE = 16384;
     //Todo If chunk map has positive idat value then decompress
     unsigned char* decompressed[idat->size];
     z_stream strm;
+    strm.next_in = const_cast<Bytef*>(idat->compressedD.data());
+    strm.avail_in = idat->compressedD.size();
     strm.zalloc = NULL;
     strm.zfree = NULL;
     strm.opaque = NULL;
-    
 
-    uncompress((Bytef*)&decompressed, (uLongf*)idat->size ,(const Bytef*)&idat->data, (uLong)idat->size);
-    for(int i =0; i < idat->size; i++) {
-        std::cout << *decompressed[i] << std::endl;
+    if(inflateInit(&strm) != Z_OK)
+    {
+        throw std::runtime_error("InflateInit Failed!");
     }
 
+    std::vector<ubyte> out_buffer(CHUNK_SIZE);
+
+    int ret;
+    do
+    {
+        strm.next_out = out_buffer.data();
+        strm.avail_out = out_buffer.size();
+
+        ret = inflate(&strm, Z_NO_FLUSH);
+
+        if(ret != Z_OK && ret != Z_STREAM_END) 
+        {
+            inflateEnd(&strm);
+            throw std::runtime_error("inflate failed with error: " + std::to_string(ret));
+        }
+
+        size_t bytes_decompressed = out_buffer.size() - strm.avail_out;
+        idat->decompressedD.insert(idat->decompressedD.end(), out_buffer.begin(), out_buffer.begin() + bytes_decompressed);
+    } while(ret != Z_STREAM_END);
+
+    return SUCCESS;
 
 }
 void png_util::scanline(ubyte& colorType, ubyte& bitdepth, ubyte4& width) 
@@ -331,7 +354,20 @@ void png_util::scanline(ubyte& colorType, ubyte& bitdepth, ubyte4& width)
     std::cout << "<---SCANLINE-->\n";
     // In Bytes
     this->scanlineLength = width * pnglib::ScanSample[colorType] * bitdepth / 8;
-    this->byteperpixel = (pnglib::ScanSample[colorType] * bitdepth) / 8;
+    switch(colorType) 
+    {
+        case 0: this->byteperpixel = 1 * bitdepth;
+        case 2: this->byteperpixel = 3 * bitdepth;
+        case 3: this->byteperpixel = 1 * bitdepth;
+        case 4: this->byteperpixel = 2 * bitdepth;
+        case 6: this->byteperpixel = 4 * bitdepth;
+        default: throw std::invalid_argument("No colortype");
+    }
+
+    this->bitPerRow = width * this->bitPerRow;    
+    this->bytesPerRow = (this->bitPerRow + 7)/8;
+
+    
     std::cout << (int)this->byteperpixel << std::endl;
 };
 
