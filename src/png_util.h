@@ -24,9 +24,8 @@ class png_util {
     private:
         std::vector<ubyte> fileBuffer{};
         size_t scanlineLength{};
-        ubyte byteperpixel{};
-        ubyte bitPerRow{};
-        ubyte bytesPerRow{};
+        int bitPerRow{};
+        int bytesPerRow{};
 
         size_t reference{};
         
@@ -67,7 +66,7 @@ class png_util {
 
         //Misc
         int Decompress(std::shared_ptr<pnglib::IDAT>);
-        void scanline(ubyte&, ubyte&, ubyte4&);
+        void scanline(ubyte&, ubyte&, ubyte4&, int&);
 
 };
 

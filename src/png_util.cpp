@@ -311,9 +311,8 @@ int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
 
 int png_util::Decompress(std::shared_ptr<pnglib::IDAT> idat) 
 {
-    constexpr size_t CHUNK_SIZE = 16384;
+    constexpr size_t CHUNK_SIZE = 4128;
     //Todo If chunk map has positive idat value then decompress
-    unsigned char* decompressed[idat->size];
     z_stream strm;
     strm.next_in = const_cast<Bytef*>(idat->compressedD.data());
     strm.avail_in = idat->compressedD.size();
@@ -346,29 +345,35 @@ int png_util::Decompress(std::shared_ptr<pnglib::IDAT> idat)
         idat->decompressedD.insert(idat->decompressedD.end(), out_buffer.begin(), out_buffer.begin() + bytes_decompressed);
     } while(ret != Z_STREAM_END);
 
+    inflateEnd(&strm);
+
+    //Expected idat decompressed data
+
     return SUCCESS;
 
 }
-void png_util::scanline(ubyte& colorType, ubyte& bitdepth, ubyte4& width) 
+void png_util::scanline(ubyte& colorType, ubyte& bitdepth, ubyte4& width, int& byteperpixel) 
 {
     std::cout << "<---SCANLINE-->\n";
     // In Bytes
     this->scanlineLength = width * pnglib::ScanSample[colorType] * bitdepth / 8;
-    switch(colorType) 
-    {
-        case 0: this->byteperpixel = 1 * bitdepth;
-        case 2: this->byteperpixel = 3 * bitdepth;
-        case 3: this->byteperpixel = 1 * bitdepth;
-        case 4: this->byteperpixel = 2 * bitdepth;
-        case 6: this->byteperpixel = 4 * bitdepth;
-        default: throw std::invalid_argument("No colortype");
-    }
+    int colorT = (int)colorType;
+    std::cout << colorT << std::endl;
+    // switch(colorT) 
+    // {
+    //     case 0: this->byteperpixel = 1 * bitdepth;
+    //     case 2: this->byteperpixel = 3 * bitdepth;
+    //     case 3: this->byteperpixel = 1 * bitdepth;
+    //     case 4: this->byteperpixel = 2 * bitdepth;
+    //     case 6: this->byteperpixel = 4 * bitdepth;
+    //     default: throw std::invalid_argument("No colortype");
+    // }
 
-    this->bitPerRow = width * this->bitPerRow;    
-    this->bytesPerRow = (this->bitPerRow + 7)/8;
+    byteperpixel = 4 * bitdepth/8;
 
+    this->bytesPerRow = width * byteperpixel;    
     
-    std::cout << (int)this->byteperpixel << std::endl;
+    std::cout << this->bytesPerRow << " byteperrow" << std::endl;
 };
 
 

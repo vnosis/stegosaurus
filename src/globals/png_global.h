@@ -8,7 +8,8 @@
 
 
 using ubyte4 = uint32_t;  
-using ubyte = uint8_t;
+using ubyte2 = uint16_t;
+using ubyte  = uint8_t;
 
 constexpr int ERROR_INVALID_IHDR = -1;
 constexpr int ERROR_INVALID_PLTE = -2;
