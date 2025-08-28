@@ -66,8 +66,9 @@ class png_util {
 
         //Misc
         int Decompress(std::shared_ptr<pnglib::IDAT>);
+        int SCANLINE_FORMAT(std::shared_ptr<pnglib::IHDR>);
+        int DcompressSize(std::shared_ptr<pnglib::IDAT>, std::shared_ptr<pnglib::IHDR>);
         void scanline(ubyte&, ubyte&, ubyte4&, int&);
-
 };
 
 #endif //PNG_H

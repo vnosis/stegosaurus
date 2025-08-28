@@ -13,7 +13,6 @@ size_t png_util::getIndex(int x, int y) const
 
 bool png_util::loadfile(const std::string &filename)
 {
-
     std::ifstream pngFile(filename, std::ios_base::binary);
     if(!pngFile) {
         std::cerr << "filed to open";
@@ -252,6 +251,13 @@ int png_util::IEND()
     return SUCCESS;
 };
 
+int png_util::DcompressSize(std::shared_ptr<pnglib::IDAT> idat, std::shared_ptr<pnglib::IHDR> ihdr) 
+{
+    ubyte2 ddata = ihdr->height * (1 + ihdr->width * ihdr->byteperpixel);
+    std::cout << (int)ddata << " Expected Size\n";
+    return (int)ddata;
+}
+
 int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
 {
     
@@ -298,7 +304,6 @@ int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
         //std::cout << (int)this->fileBuffer[reference] << std::endl;
     }
     std::cout << this->fileBuffer[reference] << std::endl;
-
 
     std::cout << "IDAT found" << std::endl;
 
@@ -350,30 +355,38 @@ int png_util::Decompress(std::shared_ptr<pnglib::IDAT> idat)
     //Expected idat decompressed data
 
     return SUCCESS;
-
 }
-void png_util::scanline(ubyte& colorType, ubyte& bitdepth, ubyte4& width, int& byteperpixel) 
+
+int png_util::SCANLINE_FORMAT(std::shared_ptr<pnglib::IHDR> ihdr)
 {
-    std::cout << "<---SCANLINE-->\n";
-    // In Bytes
-    this->scanlineLength = width * pnglib::ScanSample[colorType] * bitdepth / 8;
-    int colorT = (int)colorType;
-    std::cout << colorT << std::endl;
-    // switch(colorT) 
-    // {
-    //     case 0: this->byteperpixel = 1 * bitdepth;
-    //     case 2: this->byteperpixel = 3 * bitdepth;
-    //     case 3: this->byteperpixel = 1 * bitdepth;
-    //     case 4: this->byteperpixel = 2 * bitdepth;
-    //     case 6: this->byteperpixel = 4 * bitdepth;
-    //     default: throw std::invalid_argument("No colortype");
-    // }
-
-    byteperpixel = 4 * bitdepth/8;
-
-    this->bytesPerRow = width * byteperpixel;    
+    std::cout << "<---SCANLINE FORMAT--->\n";
+    this->scanlineLength = ihdr->width * pnglib::ScanSample[ihdr->color_type] * ihdr->depth / 8;
     
-    std::cout << this->bytesPerRow << " byteperrow" << std::endl;
+    int colorType = (int)ihdr->color_type;
+
+    std::cout << colorType << std::endl;
+    switch((int)colorType) 
+    {
+        case 0: ihdr->byteperpixel = 1 * ihdr->depth; break;
+        case 2: ihdr->byteperpixel = 3 * ihdr->depth; break;
+        case 3: ihdr->byteperpixel = 1 * ihdr->depth; break;
+        case 4: ihdr->byteperpixel = 2 * ihdr->depth; break;
+        case 6: ihdr->byteperpixel = 4 * ihdr->depth; break;
+        default: throw std::invalid_argument("No colortype");
+    }
+
+    ihdr->byteperpixel /= 8;
+    
+    std::cout << ihdr->byteperpixel << "byteperpixel\n";
+
+    this->bytesPerRow = ihdr->width * ihdr->byteperpixel;
+
+    std::cout << this->bytesPerRow << " Bytesperow\n";
+    return SUCCESS;
+}
+
+void scanline(ubyte&, ubyte&, ubyte4&, int&){
+
 };
 
 
