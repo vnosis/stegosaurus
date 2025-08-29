@@ -15,7 +15,7 @@ int main(){
     png.IHDR(pngIHDR);
     png.PLTE(pngPLTE);
     png.IDAT(pngIDAT);
-    // png.scanline(pngIHDR->color_type, pngIHDR->depth, pngIHDR->width, pngIHDR->byteperpixel);
+
     // Doing format first to set ihdr values
     png.SCANLINE_FORMAT(pngIHDR);
     if(png.Decompress(pngIDAT) != 1)
@@ -24,97 +24,19 @@ int main(){
         return -1;
     }
 
-    std::cout << pngIDAT->decompressedD.size() << " Decompressed\n";
+    std::cout << pngIDAT->decompressedD.size() << " Decompressed Size \n";
     if(pngIDAT->decompressedD.size() != png.DcompressSize(pngIDAT, pngIHDR))
     {
-        std::cout << "Exiting Program\n";
+        std::cout << "Exiting Program, Decompressed size and expected size do not match\n";
         return -1;
     }
 
-    int count = 0;
-    for(int i = 0; i < pngIDAT->decompressedD.size();i++)
-    {
-        if(pngIDAT->decompressedD[i] == 255){
-            count++;
-            std::cout << " 255 " << count << " " << i << std::endl;
-        }
-    }
+    png.scanline(pngIHDR, pngIDAT);
 
-    int scanlineSize = pngIHDR->byteperpixel * pngIHDR->width + 1;
-    std::cout << "Scanline size " << scanlineSize << std::endl;
-    std::vector<std::vector<int>> scanlineRows{};
+    png.ApplyFilters(pngIDAT); 
 
-    int j = 0;
-    std::vector<ubyte> scanCol{};
-    std::vector<ubyte> filter_Elements{};
-
-    int n_firstElements = pngIDAT->decompressedD.size()/scanlineSize;
-     
-    std::cout << n_firstElements << " n_firstElements\n" << std::endl;
-    int index = 0;
-    int i = 1;
-    while(i <= 32)
-    {
-        int scansize = scanlineSize * i;
-        std::cout << " NEW SCANLINE \n";
-         
-        filter_Elements.push_back((int)pngIDAT->decompressedD[index++]);
-        for(;index < scansize;)
-        {
-            std::cout << (int)pngIDAT->decompressedD[index] << " ";
-            scanCol.push_back((int)pngIDAT->decompressedD[index++]);
-        }
-        std::cout << "\n";
-        i++;
-    }
-    for(int i = 0; i < filter_Elements.size(); i++)
-    {
-        std::cout << (int)filter_Elements[i] << std::endl;
-    }
-    std::cout << filter_Elements.size() << std::endl;
-
-    // for(int i = 0; i < pngIDAT->decompressedD.size(); i++) 
-    // {
-    //     // FIX THIS LINE OF CODE 
-    //     // Fixed the issue but check to see if there is 
-    //     // more to be done 
-    //     scanCol.push_back((int)pngIDAT->decompressedD[i]);
-    //     if(pngIDAT->decompressedD.size() % scanline != 0)
-    //     {
-    //         std::cout << std::endl;
-    //         std::cout << "NEW SCANLINE\n";
-    //         j++;
-    //     }
-    // }
-
-    // fix this part of the code please 
-
-    // for(int i = 0; i < scanCol.size(); i++)
-    // {
-    //     scanlineRows.push_back(scanCol);
-    // }
     std::cout << "\n";
 
-    std::cout << "Reversed Tesn\n";
-
-    // Fix this reverse segment fault issue
-    std::reverse(scanlineRows.begin(), scanlineRows.end());
-    std::cout << " Check\n";
-
-    std::cout << scanlineRows.size() << " size of rows" << std::endl;
-
-    for(int i = 0; i < scanlineRows.size(); i++)
-    {
-        std::cout << scanlineRows[i][0] << std::endl;
-        std::cout << "inside loop\n";
-    }
-
-    // for(int  i = 0; i < scanlineRows[0].size(); i++) 
-    // {
-    //     std::cout << scanlineRows[0][i] << std::endl;
-    // }
-
-    std::cout << " " << std::endl;
 
     png.IEND();
 

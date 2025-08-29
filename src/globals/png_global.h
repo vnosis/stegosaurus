@@ -11,10 +11,11 @@ using ubyte4 = uint32_t;
 using ubyte2 = uint16_t;
 using ubyte  = uint8_t;
 
-constexpr int ERROR_INVALID_IHDR = -1;
-constexpr int ERROR_INVALID_PLTE = -2;
-constexpr int ERROR_INVALID_IDAT = -3;
-constexpr int ERROR_INVALID_IEND = -4;
+constexpr int ERROR_INVALID_IHDR     = -1;
+constexpr int ERROR_INVALID_PLTE     = -2;
+constexpr int ERROR_INVALID_IDAT     = -3;
+constexpr int ERROR_INVALID_IEND     = -4;
+constexpr int ERROR_INVALID_SCANLINE = -5;
 constexpr int SUCCESS = 1;
 
 
@@ -64,9 +65,11 @@ namespace pnglib {
         ubyte4 size{};       
         std::vector<ubyte> compressedD{}; 
         std::vector<ubyte> decompressedD{};
-
+        std::vector<std::vector<ubyte>> filtered_rows{};
+        std::vector<ubyte> filterFunctions{};
+        std::vector<std::vector<ubyte>> rawdata{};
     };
-     // In case of multiple IDAT's
+    // In case of multiple IDAT's
     // std::vector<IDAT> IDATS{};
 
     inline std::unordered_map<std::string, bool> ChunkMap{
@@ -85,6 +88,4 @@ namespace pnglib {
         {4,2},
         {6,4},
     };
-
-    
 }

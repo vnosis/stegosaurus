@@ -11,6 +11,11 @@ size_t png_util::getIndex(int x, int y) const
     return size_t();
 }
 
+void png_util::InitBPP(std::shared_ptr<pnglib::IHDR> ihdr)
+{
+    this->bytesPerPixel = ihdr->byteperpixel;
+}
+
 bool png_util::loadfile(const std::string &filename)
 {
     std::ifstream pngFile(filename, std::ios_base::binary);
@@ -258,6 +263,112 @@ int png_util::DcompressSize(std::shared_ptr<pnglib::IDAT> idat, std::shared_ptr<
     return (int)ddata;
 }
 
+int png_util::scanline(std::shared_ptr<pnglib::IHDR> ihdr, std::shared_ptr<pnglib::IDAT> idat)
+{
+    std::cout << "<--- Creating Scanline --->\n";
+    int scanline_Size = ihdr->byteperpixel * ihdr->width + 1;
+    int rows = idat->decompressedD.size()/scanline_Size;
+    std::cout << rows << " Number of rows\n";
+
+    std::vector<std::vector<ubyte>> filtered_rows(rows);
+    std::vector<ubyte> filter_functions{};
+
+    int index = 0;
+    int i = 1;
+
+    while(i <= rows)
+    {
+        int scansize = scanline_Size * i;
+
+        filter_functions.push_back((int)idat->decompressedD[index++]);
+        for(;index < scansize;)
+        {
+            filtered_rows[i-1].push_back(idat->decompressedD[index++]);
+        }
+        i++;
+    }
+
+    for(int i = 0; i < filter_functions.size(); i++)
+    {
+        std::cout << (int)filter_functions[i] << " " << std::endl;
+    }
+
+    for(int i = 0; i < filtered_rows.size(); i++)
+    {
+        std::cout << i << " NEW ROW \n";
+        for(int j = 0; j < filtered_rows[i].size(); j++)
+        {
+
+            std::cout << (int)filtered_rows[i][j] << " ";
+        }
+    }
+
+    idat->filtered_rows = filtered_rows;
+    idat->filterFunctions = filter_functions;
+
+    return SUCCESS;
+}
+
+int png_util::ApplyFilters(std::shared_ptr<pnglib::IDAT> idat)
+{
+    std::cout << "<--- Apply Filter --->\n";
+    int rows = idat->filterFunctions.size();
+    for(int row = 0; row < rows; row++)
+    {
+
+        switch(idat->filterFunctions[row])
+        {
+            case 0:
+                break;
+            case 1:
+                Filter_One(idat, row);
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            default:
+                throw std::invalid_argument("Invalid Function Element");
+        }
+    }
+    return SUCCESS; 
+}
+
+int png_util::Filter_One(std::shared_ptr<pnglib::IDAT> idat, int row)
+{
+    std::cout << "<--- FILTER ONE ---\n";
+    int sections = idat->filtered_rows[0].size()/this->bytesPerPixel;
+
+    this->rawData = std::vector<std::vector<ubyte>>(idat->filtered_rows.size());
+    std::cout << " raw Data " << this->rawData[row].size() << std::endl;
+    for(int i = 0; i < this->bytesPerPixel; i++)
+    {
+        this->rawData[row].push_back(idat->filtered_rows[row][i]);
+    }
+
+    for(int section = 1; section < sections; section+=this->bytesPerPixel)
+    {
+        int start = section * this->bytesPerPixel;
+        int end = start + this->bytesPerPixel;
+
+        this->rawData[row].insert(this->rawData[row].begin(), 
+                                    idat->filtered_rows[row].begin() + start,
+                                    idat->filtered_rows[row].begin() + end);
+    }
+
+    std::cout << this->rawData[row].size() << std::endl;
+
+        std::cout << "test" << std::endl;
+    for(int i = 0; i < this->rawData[row].size(); i++)
+    {
+        std::cout << this->rawData[row][i] << std::endl;
+    }
+
+    return 0;
+}
+
 int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
 {
     
@@ -384,9 +495,3 @@ int png_util::SCANLINE_FORMAT(std::shared_ptr<pnglib::IHDR> ihdr)
     std::cout << this->bytesPerRow << " Bytesperow\n";
     return SUCCESS;
 }
-
-void scanline(ubyte&, ubyte&, ubyte4&, int&){
-
-};
-
-

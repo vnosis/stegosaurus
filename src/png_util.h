@@ -23,9 +23,11 @@
 class png_util {
     private:
         std::vector<ubyte> fileBuffer{};
+        std::vector<std::vector<ubyte>> rawData{};
         size_t scanlineLength{};
         int bitPerRow{};
         int bytesPerRow{};
+        int bytesPerPixel{};
 
         size_t reference{};
         
@@ -42,6 +44,8 @@ class png_util {
 
         bool loadfile(const std::string& filename);
         bool savefile(const std::string& filename);
+
+        void InitBPP(std::shared_ptr<pnglib::IHDR>);
 
         void fillMap();
 
@@ -68,7 +72,17 @@ class png_util {
         int Decompress(std::shared_ptr<pnglib::IDAT>);
         int SCANLINE_FORMAT(std::shared_ptr<pnglib::IHDR>);
         int DcompressSize(std::shared_ptr<pnglib::IDAT>, std::shared_ptr<pnglib::IHDR>);
-        void scanline(ubyte&, ubyte&, ubyte4&, int&);
+        int scanline(std::shared_ptr<pnglib::IHDR>, std::shared_ptr<pnglib::IDAT>);
+        
+        // Filter Functions
+        int ApplyFilters(std::shared_ptr<pnglib::IDAT> idat);
+        int Filter_One(std::shared_ptr<pnglib::IDAT> idat, int);
+        int Filter_Two(std::shared_ptr<pnglib::IDAT> idat, int);
+        int Filter_Three(std::shared_ptr<pnglib::IDAT> idat, int);
+        int Filter_Four(std::shared_ptr<pnglib::IDAT> idat, int);
+
+
+
 };
 
 #endif //PNG_H
