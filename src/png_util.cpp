@@ -16,6 +16,12 @@ void png_util::InitBPP(std::shared_ptr<pnglib::IHDR> ihdr)
     this->bytesPerPixel = ihdr->byteperpixel;
 }
 
+void png_util::InitSections(std::shared_ptr<pnglib::IDAT> idat)
+{
+    this->sections = idat->filtered_rows[0].size()/this->bytesPerPixel;
+    std::cout << this->sections << std::endl;
+}
+
 bool png_util::loadfile(const std::string &filename)
 {
     std::ifstream pngFile(filename, std::ios_base::binary);
@@ -331,6 +337,7 @@ int png_util::ApplyFilters(std::shared_ptr<pnglib::IDAT> idat)
             case 3:
                 break;
             case 4:
+                Filter_Four(idat, row);
                 break;
             default:
                 throw std::invalid_argument("Invalid Function Element");
@@ -343,7 +350,6 @@ int png_util::Filter_One(std::shared_ptr<pnglib::IDAT> idat, int row)
 {
     std::cout << "<--- FILTER ONE --->\n";
 
-    int sections = idat->filtered_rows[0].size()/this->bytesPerPixel;
     this->rawData = std::vector<std::vector<ubyte>>(idat->filtered_rows.size());
 
     for(int i = 0; i < this->bytesPerPixel; i++)
@@ -351,7 +357,7 @@ int png_util::Filter_One(std::shared_ptr<pnglib::IDAT> idat, int row)
         this->rawData[row].push_back(idat->filtered_rows[row][i]);
     }
 
-    for(int section = 1; section < sections; section++)
+    for(int section = 1; section < this->sections; section++)
     {
         int start = section * this->bytesPerPixel;
         int end = start + this->bytesPerPixel;
@@ -365,7 +371,6 @@ int png_util::Filter_One(std::shared_ptr<pnglib::IDAT> idat, int row)
 
     std::cout << this->rawData[row].size() << std::endl;
 
-
     for(int i = 0; i < this->rawData[row].size(); i++)
     {
         std::cout << (int)this->rawData[row][i] << " ";
@@ -374,9 +379,33 @@ int png_util::Filter_One(std::shared_ptr<pnglib::IDAT> idat, int row)
     return 0;
 }
 
-int png_util::Filter_Two(std::shared_ptr<pnglib::IDAT> idat, int)
+int png_util::Filter_Two(std::shared_ptr<pnglib::IDAT> idat, int row)
 {
+    int indexsz = idat->filtered_rows[0].size();
+
+    if(row == 0)
+    {
+        for(int index = 0; index < indexsz; ++index)
+        {
+            this->rawData[row].push_back(idat->filtered_rows[row][index]);
+        }
+    }
+    
+    if(row > 0)
+    {
+        for(int index = 0; index < indexsz; index++)
+        {
+            this->rawData[row].push_back(idat->filtered_rows[row][index] + idat->filtered_rows[row-1][index]);
+        }
+    }
+
     return 0;
+}
+
+//Alan W. PAETH 
+int png_util::Filter_Four(std::shared_ptr<pnglib::IDAT> idat, int row)
+{
+    return SUCCESS;
 }
 
 int png_util::IDAT(std::shared_ptr<pnglib::IDAT> idat)
@@ -474,6 +503,7 @@ int png_util::Decompress(std::shared_ptr<pnglib::IDAT> idat)
     inflateEnd(&strm);
 
     //Expected idat decompressed data
+    this->idat = *idat;
 
     return SUCCESS;
 }

@@ -28,6 +28,7 @@ class png_util {
         int bitPerRow{};
         int bytesPerRow{};
         int bytesPerPixel{};
+        int sections = 0;
 
         size_t reference{};
         
@@ -46,6 +47,7 @@ class png_util {
         bool savefile(const std::string& filename);
 
         void InitBPP(std::shared_ptr<pnglib::IHDR>);
+        void InitSections(std::shared_ptr<pnglib::IDAT>);
 
         void fillMap();
 
@@ -73,6 +75,7 @@ class png_util {
         int SCANLINE_FORMAT(std::shared_ptr<pnglib::IHDR>);
         int DcompressSize(std::shared_ptr<pnglib::IDAT>, std::shared_ptr<pnglib::IHDR>);
         int scanline(std::shared_ptr<pnglib::IHDR>, std::shared_ptr<pnglib::IDAT>);
+
         
         // Filter Functions
         int ApplyFilters(std::shared_ptr<pnglib::IDAT> idat);
@@ -80,9 +83,6 @@ class png_util {
         int Filter_Two(std::shared_ptr<pnglib::IDAT> idat, int);
         int Filter_Three(std::shared_ptr<pnglib::IDAT> idat, int);
         int Filter_Four(std::shared_ptr<pnglib::IDAT> idat, int);
-
-
-
 };
 
 #endif //PNG_H

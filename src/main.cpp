@@ -33,11 +33,11 @@ int main(){
 
     png.scanline(pngIHDR, pngIDAT);
     png.InitBPP(pngIHDR);
+    png.InitSections(pngIDAT);
 
     png.ApplyFilters(pngIDAT); 
 
     std::cout << "\n";
-
 
     png.IEND();
 
