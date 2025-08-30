@@ -306,6 +306,8 @@ int png_util::scanline(std::shared_ptr<pnglib::IHDR> ihdr, std::shared_ptr<pngli
     idat->filtered_rows = filtered_rows;
     idat->filterFunctions = filter_functions;
 
+    std::cout << "\n";
+
     return SUCCESS;
 }
 
@@ -313,6 +315,7 @@ int png_util::ApplyFilters(std::shared_ptr<pnglib::IDAT> idat)
 {
     std::cout << "<--- Apply Filter --->\n";
     int rows = idat->filterFunctions.size();
+
     for(int row = 0; row < rows; row++)
     {
 
@@ -338,34 +341,41 @@ int png_util::ApplyFilters(std::shared_ptr<pnglib::IDAT> idat)
 
 int png_util::Filter_One(std::shared_ptr<pnglib::IDAT> idat, int row)
 {
-    std::cout << "<--- FILTER ONE ---\n";
-    int sections = idat->filtered_rows[0].size()/this->bytesPerPixel;
+    std::cout << "<--- FILTER ONE --->\n";
 
+    int sections = idat->filtered_rows[0].size()/this->bytesPerPixel;
     this->rawData = std::vector<std::vector<ubyte>>(idat->filtered_rows.size());
-    std::cout << " raw Data " << this->rawData[row].size() << std::endl;
+
     for(int i = 0; i < this->bytesPerPixel; i++)
     {
         this->rawData[row].push_back(idat->filtered_rows[row][i]);
     }
 
-    for(int section = 1; section < sections; section+=this->bytesPerPixel)
+    for(int section = 1; section < sections; section++)
     {
         int start = section * this->bytesPerPixel;
         int end = start + this->bytesPerPixel;
-
-        this->rawData[row].insert(this->rawData[row].begin(), 
-                                    idat->filtered_rows[row].begin() + start,
-                                    idat->filtered_rows[row].begin() + end);
+        for(; start < end; start++)
+        {
+            this->rawData[row].push_back(
+                                    idat->filtered_rows[row][start] + 
+                                    this->rawData[row][start - this->bytesPerPixel]);
+        }
     }
 
     std::cout << this->rawData[row].size() << std::endl;
 
-        std::cout << "test" << std::endl;
+
     for(int i = 0; i < this->rawData[row].size(); i++)
     {
-        std::cout << this->rawData[row][i] << std::endl;
+        std::cout << (int)this->rawData[row][i] << " ";
     }
 
+    return 0;
+}
+
+int png_util::Filter_Two(std::shared_ptr<pnglib::IDAT> idat, int)
+{
     return 0;
 }
 

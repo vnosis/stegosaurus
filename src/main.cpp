@@ -32,6 +32,7 @@ int main(){
     }
 
     png.scanline(pngIHDR, pngIDAT);
+    png.InitBPP(pngIHDR);
 
     png.ApplyFilters(pngIDAT); 
 
