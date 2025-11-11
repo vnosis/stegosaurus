@@ -352,6 +352,8 @@ int png_util::Filter_One(std::shared_ptr<pnglib::IDAT> idat, int row)
 
     this->rawData = std::vector<std::vector<ubyte>>(idat->filtered_rows.size());
 
+    std::cout << bytesPerPixel << "bytes per pixel " << std::endl;
+
     for(int i = 0; i < this->bytesPerPixel; i++)
     {
         this->rawData[row].push_back(idat->filtered_rows[row][i]);
@@ -369,7 +371,7 @@ int png_util::Filter_One(std::shared_ptr<pnglib::IDAT> idat, int row)
         }
     }
 
-    std::cout << this->rawData[row].size() << std::endl;
+    std::cout << this->rawData[row].size() <<  std::endl;
 
     for(int i = 0; i < this->rawData[row].size(); i++)
     {
